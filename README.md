@@ -1,6 +1,14 @@
-# Welcome to your Expo app 👋
+# Welcome to your Expo app with Authentication 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app) that includes a complete authentication flow.
+
+## Authentication Features
+
+- Sign In and Sign Up screens with a clean UI
+- Protected routes using Expo Router
+- Global auth context for managing user state
+- Persistent auth state using AsyncStorage
+- Seamless navigation between auth screens and main app
 
 ## Get started
 
@@ -13,38 +21,82 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 2. Start the app
 
    ```bash
-    npx expo start
+   npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+The app will start at the Sign In screen. You can:
+
+- Sign in to access the main app tabs
+- Create a new account via Sign Up
+- Sign out from the Home tab to return to Sign In
+
+The auth flow uses:
+
+- `app/auth/SignIn.tsx` and `app/auth/SignUp.tsx` for authentication screens
+- `app/context/AuthContext.tsx` for global auth state management
+- Protected routes under `app/(tabs)` that require authentication
+
+## Development
+
+You can run the app in:
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
 - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [Expo Go](https://expo.dev/go)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Project Structure
+
+```plaintext
+app/
+├── (tabs)/              # Protected tab routes
+│   ├── _layout.tsx     # Tab navigation configuration
+│   ├── index.tsx       # Home screen
+│   └── explore.tsx     # Explore screen
+├── auth/               # Authentication screens
+│   ├── _layout.tsx     # Auth stack configuration
+│   ├── SignIn.tsx      # Sign in screen
+│   └── SignUp.tsx      # Sign up screen
+├── context/            # Global state management
+│   └── AuthContext.tsx # Authentication context
+└── _layout.tsx         # Root layout with navigation
+```
+
+## Features
+
+### Authentication
+
+- Simple mock authentication for testing
+- Protected routes that require authentication
+- Automatic redirection to auth screens when not authenticated
+- Sign in/up functionality with clean UI
+
+### Navigation
+
+- Tab-based navigation for authenticated users
+- Stack navigation for auth screens
+- Automatic route protection
+- Smooth transitions between screens
+
+### UI/UX
+
+- Clean and modern interface
+- Consistent styling across screens
+- Responsive design for all screen sizes
+- Platform-specific optimizations
 
 ## Get a fresh project
 
-When you're ready, run:
+When you're ready to start from scratch, you can:
+
+1. Delete the current app directory
+2. Create a new Expo project
+3. Copy over the authentication setup
+
+Or use the included reset script:
 
 ```bash
 npm run reset-project
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+This will move the current `app` directory to `app-example` and give you a fresh start.
