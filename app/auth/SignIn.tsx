@@ -3,7 +3,7 @@ import { Text, StyleSheet } from "react-native";
 import { Formik } from "formik";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useRouter, Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { View, TextInput, Button, FormErrorMessage } from "@/components";
 import { Colors, auth } from "@/config";
 import { useTogglePasswordVisibility } from "@/hooks";
@@ -17,9 +17,10 @@ const SignIn = () => {
   const { passwordVisibility, handlePasswordVisibility, rightIcon } =
     useTogglePasswordVisibility();
 
-  const handleLogin = async (values: any) => {
+  const handleLogin = async (values: { email: string; password: string }) => {
     const { email, password } = values;
     try {
+      setErrorState("");
       await signInWithEmailAndPassword(auth, email, password);
       login();
       router.replace("/(tabs)");
@@ -40,7 +41,7 @@ const SignIn = () => {
             password: "",
           }}
           validationSchema={loginValidationSchema}
-          onSubmit={(values) => handleLogin(values)}
+          onSubmit={handleLogin}
         >
           {({
             values,
@@ -49,6 +50,7 @@ const SignIn = () => {
             handleChange,
             handleSubmit,
             handleBlur,
+            isSubmitting,
           }) => (
             <>
               <TextInput
@@ -91,11 +93,16 @@ const SignIn = () => {
                 <FormErrorMessage error={errorState} visible={true} />
               ) : null}
               <Button 
-                style={styles.button} 
+                style={[
+                  styles.button,
+                  isSubmitting && { opacity: 0.7 }
+                ]} 
                 onPress={handleSubmit}
                 title="Login"
               >
-                <Text style={styles.buttonText}>Login</Text>
+                <Text style={styles.buttonText}>
+                  {isSubmitting ? "Logging in..." : "Login"}
+                </Text>
               </Button>
             </>
           )}
@@ -106,13 +113,13 @@ const SignIn = () => {
           title="Create a new account?"
           onPress={() => router.push("/auth/SignUp")}
         >
-          Create a new account?
+          <Text>Create a new account?</Text>
         </Button>
         <Button
           style={styles.borderlessButtonContainer}
           borderless
           title="Forgot Password"
-          onPress={() => router.replace("ForgotPassword" as any)}
+          onPress={() => router.replace("/auth/ForgotPassword")}
         >
           <Text>Forgot Password</Text>
         </Button>
