@@ -4,20 +4,26 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { AuthProvider } from './context/AuthContext';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const auth = getAuth();
-      const user = auth.currentUser;
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-    };
-    checkAuth();
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
+
+  if (isLoading) {
+    return null; // Or a loading screen
+  }
 
   if (!isAuthenticated) {
     return <Redirect href="/auth/SignIn" />;
@@ -26,22 +32,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen
-        name="(tabs)"
-        />
-        <Stack.Screen
-        name="auth/SignIn"
-        />
-        <Stack.Screen
-        name="auth/SignUp"
-        />
-        <Stack.Screen
-        name="auth/ForgotPassword"
-        />
-        <Stack.Screen
-        name="auth/ResetPassword"
-        />
+        <Stack>
+          <Stack.Screen
+            name="(tabs)"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="auth"
+            options={{ headerShown: false }}
+          />
         </Stack>
       </AuthProvider>
     </ThemeProvider>
