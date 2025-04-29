@@ -1,29 +1,148 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import { Text, StyleSheet } from "react-native";
+import { Formik, FormikHelpers } from "formik";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useRouter } from 'expo-router';
+import { View, TextInput, Logo, Button, FormErrorMessage } from "@/components";
+import { Images, Colors, auth } from "@/config";
+import { useTogglePasswordVisibility } from "@/hooks";
+import { signupValidationSchema } from "@/utils";
 import { useAuth } from '../context/AuthContext';
+
+interface SignUpFormValues {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
 const SignUp = () => {
   const router = useRouter();
   const { login } = useAuth();
+  const [errorState, setErrorState] = useState("");
 
-  const handleSignUp = () => {
-    login();
-    router.replace('/(tabs)');
+  const {
+    passwordVisibility,
+    handlePasswordVisibility,
+    rightIcon,
+    handleConfirmPasswordVisibility,
+    confirmPasswordIcon,
+    confirmPasswordVisibility,
+  } = useTogglePasswordVisibility();
+
+  const handleSignup = async (values: SignUpFormValues) => {
+    const { email, password } = values;
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      login();
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      setErrorState(error.message);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
-      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-        style={[styles.button, styles.secondaryButton]} 
-        onPress={() => router.push('/auth/SignIn')}
+    <View isSafe style={styles.container}>
+      <KeyboardAwareScrollView
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollViewContent}
+        extraScrollHeight={20}
       >
-        <Text style={[styles.buttonText, styles.secondaryButtonText]}>Sign In</Text>
-      </TouchableOpacity>
+        <View style={styles.logoContainer} isSafe={true}>
+          <Logo uri={Images.logo} />
+          <Text style={styles.screenTitle}>Create a new account!</Text>
+        </View>
+        <Formik<SignUpFormValues>
+          initialValues={{
+            email: "",
+            password: "",
+            confirmPassword: "",
+          }}
+          validationSchema={signupValidationSchema}
+          onSubmit={(values: SignUpFormValues) => handleSignup(values)}
+        >
+          {({
+            values,
+            touched,
+            errors,
+            handleChange,
+            handleSubmit,
+            handleBlur,
+          }) => (
+            <>
+              <TextInput
+                name="email"
+                leftIconName="email"
+                placeholder="Enter email"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                autoFocus={true}
+                value={values.email}
+                onChangeText={handleChange("email")}
+                onBlur={handleBlur("email")}
+                rightIcon=""
+                handlePasswordVisibility={() => {}}
+              />
+              <FormErrorMessage error={errors.email || ''} visible={!!touched.email} />
+              <TextInput
+                name="password"
+                leftIconName="key-variant"
+                placeholder="Enter password"
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry={passwordVisibility}
+                textContentType="newPassword"
+                rightIcon={rightIcon}
+                handlePasswordVisibility={handlePasswordVisibility}
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
+              />
+              <FormErrorMessage
+                error={errors.password || ''}
+                visible={!!touched.password}
+              />
+              <TextInput
+                name="confirmPassword"
+                leftIconName="key-variant"
+                placeholder="Enter password"
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry={confirmPasswordVisibility}
+                textContentType="password"
+                rightIcon={confirmPasswordIcon}
+                handlePasswordVisibility={handleConfirmPasswordVisibility}
+                value={values.confirmPassword}
+                onChangeText={handleChange("confirmPassword")}
+                onBlur={handleBlur("confirmPassword")}
+              />
+              <FormErrorMessage
+                error={errors.confirmPassword || ''}
+                visible={!!touched.confirmPassword}
+              />
+              {errorState !== "" ? (
+                <FormErrorMessage error={errorState} visible={true} />
+              ) : null}
+              <Button style={styles.button} onPress={handleSubmit} title="Sign Up">
+                <Text style={styles.buttonText}>Sign Up</Text>
+              </Button>
+            </>
+          )}
+        </Formik>
+        <Button
+          style={styles.borderlessButtonContainer}
+          borderless
+          title="Already have an account?"
+          onPress={() => router.push('/auth/SignIn')}
+        >
+          Already have an account?
+        </Button>
+      </KeyboardAwareScrollView>
     </View>
   );
 };
@@ -31,37 +150,41 @@ const SignUp = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: Colors.white,
+    paddingHorizontal: 12,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 30,
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  logoContainer: {
+    alignItems: "center",
+  },
+  screenTitle: {
+    fontSize: 32,
+    fontWeight: "700",
+    color: Colors.black,
+    paddingTop: 20,
   },
   button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+    backgroundColor: Colors.orange,
+    padding: 10,
     borderRadius: 8,
-    width: '100%',
-    marginBottom: 16,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontSize: 20,
+    color: Colors.white,
+    fontWeight: "700",
   },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#007AFF',
+  borderlessButtonContainer: {
+    marginTop: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  secondaryButtonText: {
-    color: '#007AFF',
-  }
 });
 
 export default SignUp;
